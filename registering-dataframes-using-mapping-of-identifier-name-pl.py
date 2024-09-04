@@ -6,6 +6,10 @@ start_time = time.time()
 df1 = pl.read_parquet("data/yellow_tripdata_2022-04.parquet")
 df2 = pl.read_parquet("data/yellow_tripdata_2022-05.parquet")
 
+# df1 = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-04.parquet")
+# df2 = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-05.parquet")
+
+
 ctx = pl.SQLContext(frames={"trip_apr_table": df1, "trip_may_table": df2})
 
 query = """
