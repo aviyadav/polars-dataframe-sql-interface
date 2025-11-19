@@ -2,8 +2,8 @@ import polars as pl
 import time
 
 
-start_time = time.time()
-df1 = pl.read_parquet("data/yellow_tripdata_2022-04.parquet")
+start_time: float = time.time()
+df1: pl.DataFrame = pl.read_parquet("data/yellow_tripdata_2022-04.parquet")
 df2 = pl.read_parquet("data/yellow_tripdata_2022-05.parquet")
 
 # df1 = pl.read_parquet("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-04.parquet")
