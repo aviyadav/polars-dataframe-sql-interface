@@ -1,19 +1,24 @@
 import polars as pl
 import pandas as pd
 import time
+from pathlib import Path
 
 start_time: float = time.time()
 # pandas dataframe
 data: list[list[int, str]] = [[1, 'Credit Card'], [2, 'Cash'], [3, 'No Charge'], [4, 'Dispute'], [5, 'Unknown'], [6, 'Voided Trip'],]
 df_payment_type: pd.DataFrame = pd.DataFrame(data, columns=['payment_type', 'description'])
 
-trip_data: pl.LazyFrame = pl.scan_parquet(["data/yellow_tripdata_2022-04.parquet",
-                                           "data/yellow_tripdata_2022-05.parquet",
-                                           "data/yellow_tripdata_2022-06.parquet"])
+# Pick any two parquet files from the data/ folder.
+DATA_DIR: Path = Path(__file__).resolve().parent / "data"
+parquet_files: list[Path] = sorted(DATA_DIR.glob("*.parquet"))
+if len(parquet_files) < 2:
+    raise SystemExit(f"Expected at least 2 parquet files in data/, found {len(parquet_files)}")
+
+trip_data: pl.LazyFrame = pl.scan_parquet(parquet_files[:2])
 
 with pl.SQLContext(
     trip_data=trip_data,
-    zone_lookup=pl.scan_csv("data/taxi_zone_lookup.csv"),
+    zone_lookup=pl.scan_csv(DATA_DIR / "taxi_zone_lookup.csv"),
     payment_type_data=pl.from_pandas(df_payment_type),
     eager=False
 ) as ctx:
@@ -34,7 +39,7 @@ with pl.SQLContext(
         LEFT JOIN payment_type_data pt ON pt.payment_type = td.payment_type 
         LEFT JOIN zone_lookup zlpu ON zlpu.LocationID = td.PULocationID
         LEFT JOIN zone_lookup zldo ON zldo.LocationID = td.DOLocationID
-        where payment_type in (1,2) and fare_amount>50
+        where td.payment_type in (1,2) and fare_amount>50
         """
     finalDF: pl.DataFrame = ctx.execute(query)
     print(finalDF.limit(5).collect())

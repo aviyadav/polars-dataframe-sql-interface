@@ -1,14 +1,19 @@
 import pandas as pd
 import polars as pl
 import time
+from pathlib import Path
 
 
 start_time: float = time.time()
-df1: pd.DataFrame = pd.read_parquet("data/yellow_tripdata_2022-04.parquet")
-df2: pd.DataFrame = pd.read_parquet("data/yellow_tripdata_2022-05.parquet")
 
-# df1 = pd.read_parquet("data/yellow_tripdata_2025-01.parquet")
-# df2 = pd.read_parquet("data/yellow_tripdata_2025-02.parquet")
+# Pick any two parquet files from the data/ folder.
+DATA_DIR: Path = Path(__file__).resolve().parent / "data"
+parquet_files: list[Path] = sorted(DATA_DIR.glob("*.parquet"))
+if len(parquet_files) < 2:
+    raise SystemExit(f"Expected at least 2 parquet files in data/, found {len(parquet_files)}")
+
+df1: pd.DataFrame = pd.read_parquet(parquet_files[0])
+df2: pd.DataFrame = pd.read_parquet(parquet_files[1])
 
 ctx: pl.SQLContext = pl.SQLContext(trip_apr_table=pl.from_pandas(df1), trip_may_table=pl.from_pandas(df2))
 

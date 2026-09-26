@@ -42,10 +42,38 @@ The examples read NYC TLC yellow taxi trip records from the `data/` folder:
 Data courtesy of the NYC Taxi & Limousine Commission:
 https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
-> Note: `sql-queries-multiple-source.py` also references
-> `data/yellow_tripdata_2022-06.parquet`, which is not included in this repo.
-> Download it from the TLC link above or remove it from the `scan_parquet` list
-> before running that script.
+Rather than hardcoding filenames, the example scripts discover the parquet files
+in `data/` at runtime and use the first two (sorted by name). Any two monthly
+`yellow_tripdata_*.parquet` files will work, so you can drop in other months —
+including ones produced by the generator below — without editing the scripts.
+
+## Generating synthetic data
+
+`generate_tripdata.py` creates a synthetic parquet file that mirrors the schema
+and value distributions of the real TLC files, so you can produce additional
+months without downloading anything. It takes a year and a month number and
+writes `data/yellow_tripdata_<year>-<month>.parquet`:
+
+```bash
+python generate_tripdata.py 2022 6
+```
+
+Optional flags:
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--rows` | `3600000` | Number of trips to generate |
+| `--seed` | `42` | Random seed, for reproducible output |
+
+For example, to generate a small June 2022 file:
+
+```bash
+python generate_tripdata.py --year 2022 --month 6 --rows 100000
+```
+
+The generated data matches the real files' 19-column schema and dtypes, uses
+realistic value frequencies, reproduces the correlated null pattern, and keeps
+`total_amount` consistent with the sum of its components.
 
 ## Scripts
 
@@ -64,7 +92,8 @@ grouped by `VendorID` — but varies how the SQL context is configured.
 
 ## Usage
 
-Run any example from the project root so the relative `data/...` paths resolve:
+Run any example from anywhere — the scripts resolve the `data/` folder relative
+to their own location:
 
 ```bash
 python registering-dataframes-using-mapping-of-identifier-name-pl.py
